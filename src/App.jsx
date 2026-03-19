@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { quizData } from "./questions";
 
 export default function App() {
@@ -326,6 +327,7 @@ const wrongSound = useMemo(() => new Audio("/sounds/wrong.mp3"), []);
           © 2026 Aptitude Arena • Interactive quiz website for school kids.
         </div>
       </footer>
+      <Analytics />
     </div>
   );
 }
