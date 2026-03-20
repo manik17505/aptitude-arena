@@ -103,12 +103,12 @@ export const quizData = {
   color: "from-pink-500 to-yellow-400",
   questions: [
     {
-      question: "❄️ In Frozen, who has ice powers?",
+      question: "❄️ In Frozen, who has ice powers? 👸",
       options: ["Anna", "Elsa", "Olaf", "Kristoff"],
       answer: "Elsa",
       hint: "She is Anna's sister.",
       explanation: "Elsa has magical ice powers.",
-      image: "/images/elsa.jpg",
+      image: "/images/elsa-frozen.jpg",
     },
     {
       question: "⛄ What is the name of the snowman in Frozen?",
