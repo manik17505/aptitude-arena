@@ -1,6 +1,7 @@
 export const quizData = {
   Math: {
     icon: "➕",
+    color: "from-blue-500 to-cyan-400",
     questions: [
       {
         question: "What is 12 × 8?",
@@ -37,6 +38,7 @@ export const quizData = {
 
   Logic: {
     icon: "🧠",
+    color: "from-purple-500 to-pink-400",
     questions: [
       {
         question: "What comes next: 2, 4, 6, 8, ?",
@@ -67,6 +69,7 @@ export const quizData = {
 
   Verbal: {
     icon: "📚",
+    color: "from-emerald-500 to-lime-400",
     questions: [
       {
         question: "Synonym of 'Fast'?",
@@ -91,6 +94,61 @@ export const quizData = {
         options: ["Small", "Tiny", "Large", "Short"],
         answer: "Large",
         explanation: "Big means large",
+      },
+    ],
+  },
+
+  "Movies & Music": {
+    icon: "🎬",
+    color: "from-rose-500 to-orange-400",
+    questions: [
+      {
+        question: "In Frozen, who has ice powers?",
+        options: ["Anna", "Elsa", "Olaf", "Kristoff"],
+        answer: "Elsa",
+        explanation: "Elsa has magical ice powers.",
+      },
+      {
+        question: "What is the name of the snowman in Frozen?",
+        options: ["Sven", "Olaf", "Bruno", "Maui"],
+        answer: "Olaf",
+        explanation: "Olaf is the friendly snowman.",
+      },
+      {
+        question: "In Moana, what is the name of the demigod?",
+        options: ["Maui", "Olaf", "Bruno", "Kristoff"],
+        answer: "Maui",
+        explanation: "Maui is the powerful demigod.",
+      },
+      {
+        question: "What does Moana love?",
+        options: ["Mountains", "Ocean", "Desert", "Forest"],
+        answer: "Ocean",
+        explanation: "Moana loves the ocean and sailing.",
+      },
+      {
+        question: "In Encanto, which character has no powers?",
+        options: ["Mirabel", "Isabela", "Luisa", "Bruno"],
+        answer: "Mirabel",
+        explanation: "Mirabel is the only one without powers.",
+      },
+      {
+        question: "Which character can lift heavy things in Encanto?",
+        options: ["Luisa", "Isabela", "Mirabel", "Dolores"],
+        answer: "Luisa",
+        explanation: "Luisa has super strength.",
+      },
+      {
+        question: "In Huntrix the Demon Hunters, what do hunters fight?",
+        options: ["Robots", "Demons", "Animals", "Cars"],
+        answer: "Demons",
+        explanation: "Hunters protect people by fighting demons.",
+      },
+      {
+        question: "What is the role of a demon hunter?",
+        options: ["Cook food", "Fight evil", "Drive cars", "Paint"],
+        answer: "Fight evil",
+        explanation: "They protect people from evil forces.",
       },
     ],
   },
