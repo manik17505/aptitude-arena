@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { quizData } from "./questions";
 
+const levels = ["Easy", "Medium", "Hard"];
+
 const levelSettings = {
-  Easy: { time: 20, badge: "🌱", points: 1 },
-  Medium: { time: 12, badge: "⚡", points: 2 },
-  Hard: { time: 8, badge: "🔥", points: 3 },
+  Easy: { time: 20, badge: "🌱", points: 1, label: "Level 1" },
+  Medium: { time: 12, badge: "⚡", points: 2, label: "Level 2" },
+  Hard: { time: 8, badge: "🔥", points: 3, label: "Level 3" },
 };
 
 export default function App() {
@@ -14,32 +16,45 @@ export default function App() {
   const categories = Object.keys(quizData);
 
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("");
+  const [currentLevel, setCurrentLevel] = useState("Easy");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
-  const [quizFinished, setQuizFinished] = useState(false);
+  const [categoryFinished, setCategoryFinished] = useState(false);
+  const [levelComplete, setLevelComplete] = useState(false);
   const [streak, setStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [animateQuestion, setAnimateQuestion] = useState(true);
 
-  const currentQuestions = selectedCategory
+  const allCategoryQuestions = selectedCategory
     ? quizData[selectedCategory].questions
+    : [];
+
+  const currentQuestions = selectedCategory
+    ? allCategoryQuestions.filter((q) => q.difficulty === currentLevel)
     : [];
 
   const currentQuestion = currentQuestions[currentQuestionIndex];
   const totalQuestions = currentQuestions.length;
 
-  const progress = totalQuestions
-    ? ((currentQuestionIndex + (quizFinished ? 1 : 0)) / totalQuestions) * 100
+  const timerMax = levelSettings[currentLevel].time;
+
+  const currentLevelIndex = levels.indexOf(currentLevel);
+  const nextLevel = currentLevelIndex < levels.length - 1 ? levels[currentLevelIndex + 1] : null;
+
+  const totalCategoryPoints = allCategoryQuestions.reduce((sum, q) => {
+    return sum + levelSettings[q.difficulty].points;
+  }, 0);
+
+  const earnedPercentage = totalCategoryPoints
+    ? Math.round((score / totalCategoryPoints) * 100)
     : 0;
 
-  const timerMax = selectedLevel ? levelSettings[selectedLevel].time : 0;
-
   useEffect(() => {
-    if (!quizStarted || quizFinished || submitted || !selectedLevel) return;
+    if (!quizStarted || categoryFinished || levelComplete || submitted || !currentQuestion) return;
+
     if (timeLeft <= 0) {
       handleTimeUp();
       return;
@@ -50,25 +65,26 @@ export default function App() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft, quizStarted, quizFinished, submitted, selectedLevel]);
+  }, [timeLeft, quizStarted, categoryFinished, levelComplete, submitted, currentQuestion]);
 
   useEffect(() => {
     setAnimateQuestion(false);
     const t = setTimeout(() => setAnimateQuestion(true), 80);
     return () => clearTimeout(t);
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, currentLevel]);
 
-  function startQuiz(category, level) {
+  function startQuiz(category) {
     setSelectedCategory(category);
-    setSelectedLevel(level);
+    setCurrentLevel("Easy");
     setCurrentQuestionIndex(0);
     setSelectedAnswer("");
     setSubmitted(false);
     setScore(0);
     setQuizStarted(true);
-    setQuizFinished(false);
+    setCategoryFinished(false);
+    setLevelComplete(false);
     setStreak(0);
-    setTimeLeft(levelSettings[level].time);
+    setTimeLeft(levelSettings.Easy.time);
   }
 
   function handleTimeUp() {
@@ -84,7 +100,7 @@ export default function App() {
     if ((!selectedAnswer && timeLeft > 0) || submitted) return;
 
     if (selectedAnswer === currentQuestion.answer) {
-      setScore((prev) => prev + levelSettings[selectedLevel].points);
+      setScore((prev) => prev + levelSettings[currentLevel].points);
       setStreak((prev) => prev + 1);
       correctSound.currentTime = 0;
       correctSound.play().catch(() => {});
@@ -102,40 +118,64 @@ export default function App() {
       setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer("");
       setSubmitted(false);
-      setTimeLeft(levelSettings[selectedLevel].time);
+      setTimeLeft(levelSettings[currentLevel].time);
     } else {
-      setQuizFinished(true);
-      setSubmitted(false);
+      if (nextLevel) {
+        setLevelComplete(true);
+      } else {
+        setCategoryFinished(true);
+      }
     }
+  }
+
+  function unlockNextLevel() {
+    if (!nextLevel) return;
+
+    setCurrentLevel(nextLevel);
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer("");
+    setSubmitted(false);
+    setLevelComplete(false);
+    setTimeLeft(levelSettings[nextLevel].time);
+  }
+
+  function restartCategory() {
+    if (!selectedCategory) return;
+    startQuiz(selectedCategory);
   }
 
   function restartQuiz() {
     setSelectedCategory("");
-    setSelectedLevel("");
+    setCurrentLevel("Easy");
     setCurrentQuestionIndex(0);
     setSelectedAnswer("");
     setSubmitted(false);
     setScore(0);
     setQuizStarted(false);
-    setQuizFinished(false);
+    setCategoryFinished(false);
+    setLevelComplete(false);
     setStreak(0);
     setTimeLeft(0);
   }
 
   function getResultMessage() {
-    const maxScore = totalQuestions * (selectedLevel ? levelSettings[selectedLevel].points : 1);
-    const percentage = maxScore ? Math.round((score / maxScore) * 100) : 0;
-
     if (selectedCategory === "Movies & Music") {
-      if (percentage === 100) return "🌟 Amazing! You are the ultimate Movie & Music Master!";
-      if (percentage >= 80) return "🎬 Fantastic! You really know your favorite stories and songs!";
-      if (percentage >= 50) return "🍿 Nice job! You are on your way to becoming a movie star quiz champ!";
+      if (earnedPercentage === 100) return "🌟 Amazing! You are the ultimate Movie & Music Master!";
+      if (earnedPercentage >= 80) return "🎬 Fantastic! You really know your favorite stories and songs!";
+      if (earnedPercentage >= 50) return "🍿 Nice job! You are on your way to becoming a movie star quiz champ!";
       return "🎵 Keep playing and you'll become a Movies & Music hero!";
     }
 
-    if (percentage === 100) return "Outstanding! You got everything correct.";
-    if (percentage >= 80) return "Great work! You have strong aptitude skills.";
-    if (percentage >= 50) return "Nice effort! Keep practicing and you will improve fast.";
+    if (selectedCategory === "GI Surgery & Minimal Access") {
+      if (earnedPercentage === 100) return "🩺 Excellent. Strong mastery across GI surgery and minimal access concepts.";
+      if (earnedPercentage >= 80) return "🔬 Very strong performance. Advanced judgment and core concepts are well retained.";
+      if (earnedPercentage >= 50) return "📘 Solid effort. A focused review will sharpen the craft further.";
+      return "🧠 Keep practicing. Repetition and review build surgical sharpness.";
+    }
+
+    if (earnedPercentage === 100) return "Outstanding! You got everything correct.";
+    if (earnedPercentage >= 80) return "Great work! You have strong aptitude skills.";
+    if (earnedPercentage >= 50) return "Nice effort! Keep practicing and you will improve fast.";
     return "Good try! Practice a little more and come back stronger.";
   }
 
@@ -175,13 +215,13 @@ export default function App() {
                   icon: "🎯",
                 },
                 {
-                  title: "Levels & Timer",
-                  desc: "Choose difficulty and race against the clock.",
-                  icon: "⏱️",
+                  title: "Auto Unlock Levels",
+                  desc: "Each category starts at Level 1 and unlocks higher levels as you progress.",
+                  icon: "🎮",
                 },
                 {
-                  title: "Score Tracking",
-                  desc: "Earn points and build your streak.",
+                  title: "Score & Streaks",
+                  desc: "Earn points, build streaks, and level up like a game.",
                   icon: "🏆",
                 },
               ].map((feature) => (
@@ -196,34 +236,6 @@ export default function App() {
               ))}
             </section>
 
-            <section className="mb-10">
-              <div className="mb-6 text-center">
-                <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
-                  Choose Difficulty
-                </p>
-                <h2 className="mt-2 text-3xl font-extrabold">Pick Your Level</h2>
-              </div>
-
-              <div className="mx-auto grid max-w-4xl gap-4 md:grid-cols-3">
-                {Object.entries(levelSettings).map(([level, cfg]) => (
-                  <button
-                    key={level}
-                    onClick={() => setSelectedLevel(level)}
-                    className={`rounded-3xl p-5 text-left shadow-sm ring-1 transition ${
-                      selectedLevel === level
-                        ? "bg-indigo-50 ring-indigo-300"
-                        : "bg-white ring-slate-200 hover:-translate-y-1 hover:shadow-lg"
-                    }`}
-                  >
-                    <div className="text-3xl">{cfg.badge}</div>
-                    <h3 className="mt-3 text-xl font-bold">{level}</h3>
-                    <p className="mt-1 text-slate-600">{cfg.time} sec/question</p>
-                    <p className="mt-1 text-slate-600">{cfg.points} point{cfg.points > 1 ? "s" : ""} each</p>
-                  </button>
-                ))}
-              </div>
-            </section>
-
             <section>
               <div className="mb-6 text-center">
                 <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
@@ -231,7 +243,7 @@ export default function App() {
                 </p>
                 <h2 className="mt-2 text-3xl font-extrabold">Start Your Quiz Adventure</h2>
                 <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-                  Pick a topic and begin answering questions. Your score will be shown at the end.
+                  Pick a topic and begin at Level 1. Higher levels unlock automatically.
                 </p>
               </div>
 
@@ -239,13 +251,8 @@ export default function App() {
                 {categories.map((category) => (
                   <button
                     key={category}
-                    onClick={() => selectedLevel && startQuiz(category, selectedLevel)}
-                    disabled={!selectedLevel}
-                    className={`rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition ${
-                      selectedLevel
-                        ? "hover:-translate-y-1 hover:shadow-lg"
-                        : "cursor-not-allowed opacity-60"
-                    }`}
+                    onClick={() => startQuiz(category)}
+                    className="rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div
                       className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${quizData[category].color} text-2xl text-white shadow-md`}
@@ -254,10 +261,10 @@ export default function App() {
                     </div>
                     <h3 className="mt-5 text-2xl font-bold">{category}</h3>
                     <p className="mt-2 text-slate-600">
-                      {quizData[category].questions.length} fun questions to test and grow skills.
+                      {quizData[category].questions.length} questions across 3 levels.
                     </p>
                     <div className="mt-5 inline-flex rounded-2xl bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700">
-                      {selectedLevel ? `Start ${selectedLevel}` : "Choose a level first"}
+                      Start Level 1
                     </div>
                   </button>
                 ))}
@@ -266,7 +273,7 @@ export default function App() {
           </>
         )}
 
-        {quizStarted && !quizFinished && currentQuestion && (
+        {quizStarted && !categoryFinished && !levelComplete && currentQuestion && (
           <section
             className={`mx-auto max-w-3xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 md:p-8 transition-all duration-500 ${
               animateQuestion ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
@@ -278,7 +285,7 @@ export default function App() {
                   {selectedCategory} Quiz
                 </p>
                 <h2 className="mt-1 text-2xl font-extrabold">
-                  Question {currentQuestionIndex + 1} of {totalQuestions}
+                  {levelSettings[currentLevel].label} • Question {currentQuestionIndex + 1} of {totalQuestions}
                 </h2>
               </div>
 
@@ -293,6 +300,18 @@ export default function App() {
                 >
                   ⏱️ {timeLeft}s
                 </div>
+              </div>
+            </div>
+
+            <div className="mb-3 flex flex-wrap gap-3">
+              <div className="rounded-2xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700">
+                {levelSettings[currentLevel].badge} {levelSettings[currentLevel].label}
+              </div>
+              <div className="rounded-2xl bg-sky-50 px-4 py-2 text-sm font-bold text-sky-700">
+                ⭐ {levelSettings[currentLevel].points} point{levelSettings[currentLevel].points > 1 ? "s" : ""} each
+              </div>
+              <div className="rounded-2xl bg-yellow-50 px-4 py-2 text-sm font-bold text-yellow-700">
+                🔥 Streak: {streak}
               </div>
             </div>
 
@@ -314,12 +333,6 @@ export default function App() {
               <div className="mb-4 flex flex-wrap gap-3">
                 <div className="rounded-2xl bg-pink-50 px-4 py-2 text-sm font-bold text-pink-700">
                   🎬 Movie Mode
-                </div>
-                <div className="rounded-2xl bg-yellow-50 px-4 py-2 text-sm font-bold text-yellow-700">
-                  🔥 Streak: {streak}
-                </div>
-                <div className="rounded-2xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700">
-                  {levelSettings[selectedLevel].badge} {selectedLevel}
                 </div>
               </div>
             )}
@@ -407,9 +420,16 @@ export default function App() {
                       {timeLeft === 0 ? "⏰ Time’s Up!" : "😢 Oops!"}
                     </p>
                     <p className="mt-1 text-sm font-semibold text-rose-700">
-                      {selectedAnswer
-                        ? <>Your chosen answer (<b>{selectedAnswer}</b>) is incorrect. The correct answer is <b>{currentQuestion.answer}</b>.</>
-                        : <>You ran out of time. The correct answer is <b>{currentQuestion.answer}</b>.</>}
+                      {selectedAnswer ? (
+                        <>
+                          Your chosen answer (<b>{selectedAnswer}</b>) is incorrect. The correct answer is{" "}
+                          <b>{currentQuestion.answer}</b>.
+                        </>
+                      ) : (
+                        <>
+                          You ran out of time. The correct answer is <b>{currentQuestion.answer}</b>.
+                        </>
+                      )}
                     </p>
                   </div>
                 )}
@@ -423,7 +443,7 @@ export default function App() {
                     onClick={nextQuestion}
                     className="rounded-2xl bg-indigo-600 px-6 py-3 font-semibold text-white shadow transition hover:bg-indigo-700"
                   >
-                    {currentQuestionIndex === totalQuestions - 1 ? "See Results" : "Next Question"}
+                    {currentQuestionIndex === totalQuestions - 1 ? "Finish Level" : "Next Question"}
                   </button>
                   <button
                     onClick={restartQuiz}
@@ -437,25 +457,67 @@ export default function App() {
           </section>
         )}
 
-        {quizFinished && (
-          <section className="mx-auto max-w-3xl rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200 animate-pulse">
+        {quizStarted && levelComplete && !categoryFinished && (
+          <section className="mx-auto max-w-3xl rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-4xl text-white shadow-lg">
+              🚀
+            </div>
+            <p className="mt-6 text-sm font-semibold uppercase tracking-wider text-indigo-600">
+              Level Complete
+            </p>
+            <h2 className="mt-2 text-4xl font-extrabold">
+              {levelSettings[currentLevel].label} Complete!
+            </h2>
+            <p className="mt-4 text-lg text-slate-600">
+              Great job. You have unlocked {levelSettings[nextLevel].label}.
+            </p>
+
+            <div className="mt-6 inline-flex rounded-full bg-violet-100 px-5 py-2 text-sm font-bold text-violet-700 ring-1 ring-violet-200">
+              {levelSettings[nextLevel].badge} {levelSettings[nextLevel].label} Unlocked
+            </div>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <button
+                onClick={unlockNextLevel}
+                className="rounded-2xl bg-indigo-600 px-6 py-3 font-semibold text-white shadow transition hover:bg-indigo-700"
+              >
+                Start {levelSettings[nextLevel].label}
+              </button>
+              <button
+                onClick={restartQuiz}
+                className="rounded-2xl border border-slate-300 bg-white px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Choose Another Category
+              </button>
+            </div>
+          </section>
+        )}
+
+        {quizStarted && categoryFinished && (
+          <section className="mx-auto max-w-3xl rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-4xl text-white shadow-lg">
               🏅
             </div>
             <p className="mt-6 text-sm font-semibold uppercase tracking-wider text-indigo-600">
-              Quiz Complete
+              Category Complete
             </p>
             <h2 className="mt-2 text-4xl font-extrabold">Your Result</h2>
             <p className="mt-4 text-2xl font-bold text-slate-800">
-              {score} / {totalQuestions * (selectedLevel ? levelSettings[selectedLevel].points : 1)}
+              {score} / {totalCategoryPoints}
             </p>
             <p className="mt-2 text-lg text-slate-600">
-              Level: {selectedLevel}
+              You scored {earnedPercentage}%
             </p>
 
             {selectedCategory === "Movies & Music" && (
               <div className="mx-auto mt-4 inline-flex rounded-full bg-pink-100 px-5 py-2 text-sm font-bold text-pink-700 ring-1 ring-pink-200">
                 🌟 Movies & Music Champion
+              </div>
+            )}
+
+            {selectedCategory === "GI Surgery & Minimal Access" && (
+              <div className="mx-auto mt-4 inline-flex rounded-full bg-sky-100 px-5 py-2 text-sm font-bold text-sky-700 ring-1 ring-sky-200">
+                🩺 Surgical Mastery Mode
               </div>
             )}
 
@@ -465,10 +527,10 @@ export default function App() {
 
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <button
-                onClick={() => startQuiz(selectedCategory, selectedLevel)}
+                onClick={restartCategory}
                 className="rounded-2xl bg-indigo-600 px-6 py-3 font-semibold text-white shadow transition hover:bg-indigo-700"
               >
-                Try Again
+                Play Category Again
               </button>
               <button
                 onClick={restartQuiz}
@@ -477,20 +539,13 @@ export default function App() {
                 Choose Another Category
               </button>
             </div>
-
-            <div className="mt-8 h-3 w-full overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-lime-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
           </section>
         )}
       </main>
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-6 py-6 text-center text-sm text-slate-500">
-          © 2026 Aptitude Arena • Interactive quiz website for school kids.
+          © 2026 Aptitude Arena • Interactive quiz website.
         </div>
       </footer>
     </div>
