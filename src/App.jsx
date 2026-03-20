@@ -210,7 +210,15 @@ const [streak, setStreak] = useState(0);
             </div>
 
             <h3 className="text-xl font-bold md:text-2xl">{currentQuestion.question}</h3>
-
+{selectedCategory === "Movies & Music" && currentQuestion.image && (
+  <div className="mt-4 overflow-hidden rounded-3xl ring-1 ring-slate-200 shadow-sm">
+    <img
+      src={currentQuestion.image}
+      alt={currentQuestion.question}
+      className="h-56 w-full object-cover md:h-72"
+    />
+  </div>
+)}
             <div className="mt-6 grid gap-3">
               {currentQuestion.options.map((option) => {
                 const isSelected = selectedAnswer === option;
