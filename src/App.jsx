@@ -13,7 +13,7 @@ const wrongSound = useMemo(() => new Audio("/sounds/wrong.mp3"), []);
   const [score, setScore] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
-
+const [streak, setStreak] = useState(0);
   const currentQuestions = selectedCategory
     ? quizData[selectedCategory].questions
     : [];
@@ -32,6 +32,7 @@ const wrongSound = useMemo(() => new Audio("/sounds/wrong.mp3"), []);
     setScore(0);
     setQuizStarted(true);
     setQuizFinished(false);
+    setStreak(0);
   }
 
   function submitAnswer() {
@@ -39,9 +40,11 @@ const wrongSound = useMemo(() => new Audio("/sounds/wrong.mp3"), []);
 
     if (selectedAnswer === currentQuestion.answer) {
       setScore((prev) => prev + 1);
+       setStreak((prev) => prev + 1);
       correctSound.currentTime = 0;
     correctSound.play();
   } else {
+    setStreak(0);
     wrongSound.currentTime = 0;
     wrongSound.play();
  
@@ -69,12 +72,19 @@ const wrongSound = useMemo(() => new Audio("/sounds/wrong.mp3"), []);
     setScore(0);
     setQuizStarted(false);
     setQuizFinished(false);
+    setStreak(0);
   }
 
   function getResultMessage() {
     const percentage = totalQuestions
       ? Math.round((score / totalQuestions) * 100)
       : 0;
+      if (selectedCategory === "Movies & Music") {
+    if (percentage === 100) return "🌟 Amazing! You are the ultimate Movie & Music Master!";
+    if (percentage >= 80) return "🎬 Fantastic! You really know your favorite stories and songs!";
+    if (percentage >= 50) return "🍿 Nice job! You are on your way to becoming a movie star quiz champ!";
+    return "🎵 Keep playing and you'll become a Movies & Music hero!";
+  }
 
     if (percentage === 100) return "Outstanding! You got everything correct.";
     if (percentage >= 80) return "Great work! You have strong aptitude skills.";
@@ -181,6 +191,16 @@ const wrongSound = useMemo(() => new Audio("/sounds/wrong.mp3"), []);
                 Score: {score}
               </div>
             </div>
+            {selectedCategory === "Movies & Music" && (
+  <div className="mt-2 flex flex-wrap gap-3">
+    <div className="rounded-2xl bg-pink-50 px-4 py-2 text-sm font-bold text-pink-700">
+      🎬 Movie Mode
+    </div>
+    <div className="rounded-2xl bg-yellow-50 px-4 py-2 text-sm font-bold text-yellow-700">
+      🔥 Streak: {streak}
+    </div>
+  </div>
+)}
 
             <div className="mb-6 h-3 w-full overflow-hidden rounded-full bg-slate-100">
               <div
