@@ -167,4 +167,113 @@ export const quizData = {
       image: "/images/demon-hunter.jpg",
     },
   ],
-},}
+},
+"GI Surgery & Minimal Access": {
+  icon: "🩺",
+  color: "from-sky-600 to-teal-500",
+  questions: [
+    {
+      question: "During laparoscopic cholecystectomy, if the critical view of safety cannot be achieved and biliary anatomy remains unclear, which bailout strategy is preferred?",
+      options: [
+        "Continue fundus-first total cholecystectomy",
+        "Subtotal cholecystectomy",
+        "Blind clipping of suspected cystic structures",
+        "Routine conversion to open in every case",
+      ],
+      answer: "Subtotal cholecystectomy",
+      explanation:
+        "Current safe cholecystectomy guidance supports considering subtotal cholecystectomy when the critical view cannot be safely achieved and anatomy remains unclear.",
+    },
+    {
+      question: "What is the standard operative approach for most patients requiring gallbladder removal?",
+      options: [
+        "Open cholecystectomy",
+        "Laparoscopic cholecystectomy",
+        "Transgastric extraction only",
+        "Non-operative management in all cases",
+      ],
+      answer: "Laparoscopic cholecystectomy",
+      explanation:
+        "Laparoscopic cholecystectomy is the standard of care for most patients requiring gallbladder removal.",
+    },
+    {
+      question: "Which statement best describes the purpose of diagnostic laparoscopy?",
+      options: [
+        "It replaces all imaging in abdominal disease",
+        "It is a guideline-supported tool for selected situations when direct intra-abdominal assessment may aid diagnosis or management",
+        "It should never be used in acute abdominal conditions",
+        "It is only useful in trauma and nowhere else",
+      ],
+      answer:
+        "It is a guideline-supported tool for selected situations when direct intra-abdominal assessment may aid diagnosis or management",
+      explanation:
+        "SAGES diagnostic laparoscopy guidance supports its use as a selective adjunct in appropriate clinical settings.",
+    },
+    {
+      question: "Within ERAS pathways for colorectal surgery, the main goal is best described as:",
+      options: [
+        "Standardized multimodal perioperative care to improve recovery",
+        "Keeping patients fasting for prolonged periods after surgery",
+        "Avoiding mobilization until discharge day",
+        "Using one anesthetic strategy for every patient without variation",
+      ],
+      answer: "Standardized multimodal perioperative care to improve recovery",
+      explanation:
+        "ERAS focuses on evidence-based, standardized perioperative interventions to improve outcomes and recovery.",
+    },
+    {
+      question: "In a minimally invasive GI surgery practice, which principle is most aligned with safe adoption of new techniques?",
+      options: [
+        "Introduce new techniques without structured evaluation",
+        "Use new technology only after appropriate training, governance, and outcome review",
+        "Adopt novel methods only in emergencies",
+        "Avoid all innovation in established units",
+      ],
+      answer:
+        "Use new technology only after appropriate training, governance, and outcome review",
+      explanation:
+        "SAGES guidance emphasizes structured adoption, training, and oversight when introducing new techniques and technology.",
+    },
+    {
+      question: "A surgeon reviewing postoperative pathways for elective colorectal surgery is most likely applying which framework?",
+      options: [
+        "ERAS",
+        "ATLS",
+        "BI-RADS",
+        "TNM only",
+      ],
+      answer: "ERAS",
+      explanation:
+        "ERAS is the core framework for standardized perioperative recovery pathways in colorectal surgery.",
+    },
+    {
+      question: "Which of the following is the safest response when biliary anatomy is uncertain during laparoscopic cholecystectomy?",
+      options: [
+        "Proceed quickly to finish the case",
+        "Pause, re-orient, use adjuncts or bailout strategies, and avoid blind division",
+        "Divide structures based on expected anatomy",
+        "Ignore the uncertainty if bleeding is minimal",
+      ],
+      answer:
+        "Pause, re-orient, use adjuncts or bailout strategies, and avoid blind division",
+      explanation:
+        "Safe cholecystectomy principles prioritize clear anatomy and use of safe bailout strategies over forced completion.",
+    },
+    {
+      question: "For a senior GI surgeon building a self-practice quiz in minimally invasive surgery, which topic mix is most appropriate?",
+      options: [
+        "Only instrument brand recall",
+        "Guideline-based judgment, intraoperative decision-making, and perioperative pathways",
+        "Only anatomy mnemonics from undergraduate training",
+        "Only billing and coding scenarios",
+      ],
+      answer:
+        "Guideline-based judgment, intraoperative decision-making, and perioperative pathways",
+      explanation:
+        "For advanced practice, the highest-yield review is judgment-heavy and guideline-grounded rather than rote memorization.",
+    },
+  ],
+},
+
+
+}
