@@ -263,16 +263,25 @@ const [streak, setStreak] = useState(0);
         : "bg-red-100 ring-red-300 text-red-800"
     }`}
   >
-    {selectedAnswer === currentQuestion.answer ? (
-      <p className="font-semibold">
-        Your chosen answer (<b>{selectedAnswer}</b>) is correct.
-      </p>
-    ) : (
-      <p className="font-semibold">
-        Your chosen answer (<b>{selectedAnswer}</b>) is incorrect. The correct answer is <b>{currentQuestion.answer}</b>.
-      </p>
-    )}
-
+   {selectedAnswer === currentQuestion.answer ? (
+  <div>
+    <p className="text-xl font-extrabold text-emerald-700">
+      🎉 Correct!
+    </p>
+    <p className="mt-1 text-sm font-semibold text-emerald-700">
+      Your chosen answer (<b>{selectedAnswer}</b>) is correct.
+    </p>
+  </div>
+) : (
+  <div>
+    <p className="text-xl font-extrabold text-rose-700">
+      😢 Oops!
+    </p>
+    <p className="mt-1 text-sm font-semibold text-rose-700">
+      Your chosen answer (<b>{selectedAnswer}</b>) is incorrect. The correct answer is <b>{currentQuestion.answer}</b>.
+    </p>
+  </div>
+)}
     <p className="mt-2 text-slate-700">
       <span className="font-semibold">Explanation:</span> {currentQuestion.explanation}
     </p>
