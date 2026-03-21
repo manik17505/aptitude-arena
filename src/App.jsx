@@ -1,13 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
-import { quizData } from "./questions";
+import { quizData } from "./data";
 
 const levels = ["Easy", "Medium", "Hard"];
 
 const levelSettings = {
-  Easy: { time: 20, badge: "🌱", points: 1, label: "Level 1" },
-  Medium: { time: 12, badge: "⚡", points: 2, label: "Level 2" },
-  Hard: { time: 8, badge: "🔥", points: 3, label: "Level 3" },
+  Easy: { time: 40, badge: "🌱", points: 1, label: "Level 1" },
+  Medium: { time: 35, badge: "⚡", points: 2, label: "Level 2" },
+  Hard: { time: 30, badge: "🔥", points: 3, label: "Level 3" },
 };
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function getRandomSubset(array, count) {
+  return shuffleArray(array).slice(0, count);
+}
+const QUESTIONS_PER_LEVEL = 3;
 
 export default function App() {
   const correctSound = useMemo(() => new Audio("/sounds/correct.mp3"), []);
@@ -27,14 +40,19 @@ export default function App() {
   const [streak, setStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [animateQuestion, setAnimateQuestion] = useState(true);
-
+  const [easyQuestions, setEasyQuestions] = useState([]);
+  const [mediumQuestions, setMediumQuestions] = useState([]);
+  const [hardQuestions, setHardQuestions] = useState([]);
   const allCategoryQuestions = selectedCategory
     ? quizData[selectedCategory].questions
     : [];
 
-  const currentQuestions = selectedCategory
-    ? allCategoryQuestions.filter((q) => q.difficulty === currentLevel)
-    : [];
+  const currentQuestions =
+  currentLevel === "Easy"
+    ? easyQuestions
+    : currentLevel === "Medium"
+    ? mediumQuestions
+    : hardQuestions;
 
   const currentQuestion = currentQuestions[currentQuestionIndex];
   const totalQuestions = currentQuestions.length;
@@ -44,9 +62,10 @@ export default function App() {
   const currentLevelIndex = levels.indexOf(currentLevel);
   const nextLevel = currentLevelIndex < levels.length - 1 ? levels[currentLevelIndex + 1] : null;
 
-  const totalCategoryPoints = allCategoryQuestions.reduce((sum, q) => {
-    return sum + levelSettings[q.difficulty].points;
-  }, 0);
+ const totalCategoryPoints =
+  easyQuestions.length * levelSettings.Easy.points +
+  mediumQuestions.length * levelSettings.Medium.points +
+  hardQuestions.length * levelSettings.Hard.points;
 
   const earnedPercentage = totalCategoryPoints
     ? Math.round((score / totalCategoryPoints) * 100)
@@ -72,20 +91,52 @@ export default function App() {
     const t = setTimeout(() => setAnimateQuestion(true), 80);
     return () => clearTimeout(t);
   }, [currentQuestionIndex, currentLevel]);
+function buildLevelQuestions(category) {
+  const questions = quizData[category].questions;
+
+  const easy = getRandomSubset(
+    questions.filter((q) => q.difficulty === "Easy"),
+    QUESTIONS_PER_LEVEL
+  ).map((q) => ({
+    ...q,
+    options: shuffleArray(q.options),
+  }));
+
+  const medium = getRandomSubset(
+    questions.filter((q) => q.difficulty === "Medium"),
+    QUESTIONS_PER_LEVEL
+  ).map((q) => ({
+    ...q,
+    options: shuffleArray(q.options),
+  }));
+
+  const hard = getRandomSubset(
+    questions.filter((q) => q.difficulty === "Hard"),
+    QUESTIONS_PER_LEVEL
+  ).map((q) => ({
+    ...q,
+    options: shuffleArray(q.options),
+  }));
+
+  setEasyQuestions(easy);
+  setMediumQuestions(medium);
+  setHardQuestions(hard);
+}
 
   function startQuiz(category) {
-    setSelectedCategory(category);
-    setCurrentLevel("Easy");
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer("");
-    setSubmitted(false);
-    setScore(0);
-    setQuizStarted(true);
-    setCategoryFinished(false);
-    setLevelComplete(false);
-    setStreak(0);
-    setTimeLeft(levelSettings.Easy.time);
-  }
+  buildLevelQuestions(category);
+  setSelectedCategory(category);
+  setCurrentLevel("Easy");
+  setCurrentQuestionIndex(0);
+  setSelectedAnswer("");
+  setSubmitted(false);
+  setScore(0);
+  setQuizStarted(true);
+  setCategoryFinished(false);
+  setLevelComplete(false);
+  setStreak(0);
+  setTimeLeft(levelSettings.Easy.time);
+}
 
   function handleTimeUp() {
     if (submitted) return;
@@ -156,6 +207,9 @@ export default function App() {
     setLevelComplete(false);
     setStreak(0);
     setTimeLeft(0);
+    setEasyQuestions([]);
+    setMediumQuestions([]);
+    setHardQuestions([]);
   }
 
   function getResultMessage() {
@@ -434,10 +488,32 @@ export default function App() {
                   </div>
                 )}
 
-                <p className="mt-2 text-slate-700">
-                  <span className="font-semibold">Explanation:</span> {currentQuestion.explanation}
-                </p>
+               <div className="mt-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+  <p className="font-semibold text-slate-800">Explanation</p>
+  <p className="mt-2 text-slate-700">{currentQuestion.explanation}</p>
 
+  {currentQuestion.steps && currentQuestion.steps.length > 0 && (
+    <div className="mt-4 space-y-2">
+      {currentQuestion.steps.map((step, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-slate-200"
+        >
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
+            {index + 1}
+          </div>
+          <p className="text-sm font-medium text-slate-700">{step}</p>
+        </div>
+      ))}
+
+      <div className="rounded-xl bg-emerald-50 px-4 py-3 ring-1 ring-emerald-200">
+        <p className="text-sm font-semibold text-emerald-700">
+          Final Answer: {currentQuestion.answer}
+        </p>
+      </div>
+    </div>
+  )}
+</div>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <button
                     onClick={nextQuestion}
