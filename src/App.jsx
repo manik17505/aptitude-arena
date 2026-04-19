@@ -20,7 +20,7 @@ function shuffleArray(array) {
 function getRandomSubset(array, count) {
   return shuffleArray(array).slice(0, count);
 }
-const QUESTIONS_PER_LEVEL = 3;
+const QUESTIONS_PER_LEVEL = 5;
 
 export default function App() {
   const correctSound = useMemo(() => new Audio("/sounds/correct.mp3"), []);
